@@ -14,7 +14,8 @@ The official layout XLSX is stored here:
 
 Generated artifacts:
 
-- `csv_x2c/` – per‑sheet CSVs (canonical)
+- `csv_x2c_303/` – per‑sheet CSVs (canonical)
+- `aeat_code2txt/layouts/layouts_303.json` – bundled JSON layout (runtime input)
 - `examples/fields_303.json` – full field catalog with metadata
 - `examples/keys_303.json` – non‑code field keys (template)
 - `examples/data_303.json` – merged input (codes + keys)
@@ -28,13 +29,26 @@ Regenerate everything from the XLSX:
 scripts/regenerate_all.sh data/DR303e26v101.xlsx
 ```
 
+If `data/dr390e2025.xlsx` exists, the script also generates:
+
+- `csv_x2c_390/`
+- `aeat_code2txt/layouts/layouts_390.json`
+
 Render from a single JSON input:
 
 ```bash
 PYTHONPATH=. python3 scripts/render_report.py \
-  csv_x2c \
+  csv_x2c_303 \
   --data-json examples/data_303.json \
   --output examples/output_303.txt
+```
+
+Load bundled layout by model (recommended for runtime):
+
+```python
+from aeat_code2txt import load_layout
+
+layout = load_layout("303")
 ```
 
 Strict mode (error on unknown keys):
@@ -63,7 +77,7 @@ Fields without `[NN]` codes get an auto key derived from the description:
 You can export the full key template:
 
 ```bash
-PYTHONPATH=. python3 scripts/export_keys.py csv_x2c --output examples/keys_303.json
+PYTHONPATH=. python3 scripts/export_keys.py csv_x2c_303 --output examples/keys_303.json
 ```
 
 ## Full field catalog
@@ -71,7 +85,7 @@ PYTHONPATH=. python3 scripts/export_keys.py csv_x2c --output examples/keys_303.j
 To inspect every field (codes + non‑codes) with metadata:
 
 ```bash
-PYTHONPATH=. python3 scripts/export_fields.py csv_x2c --output examples/fields_303.json
+PYTHONPATH=. python3 scripts/export_fields.py csv_x2c_303 --output examples/fields_303.json
 ```
 
 Each entry includes:
@@ -88,7 +102,7 @@ Each entry includes:
 from decimal import Decimal
 from aeat_code2txt import parse_layout_directory, render_report
 
-layout = parse_layout_directory(Path("csv_x2c"))
+layout = parse_layout_directory(Path("csv_x2c_303"))
 data = {"01": Decimal("1000.00"), "identificacion_1_nif": "B12345678"}
 
 text = render_report(layout, data=data)
@@ -105,7 +119,7 @@ Hooks are supported:
 ```python
 from aeat_code2txt import parse_layout_directory, parse_report, validate_report
 
-layout = parse_layout_directory(Path("csv_x2c"))
+layout = parse_layout_directory(Path("csv_x2c_303"))
 data = parse_report(text, layout)
 issues = validate_report(text, layout)
 ```
