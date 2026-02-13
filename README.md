@@ -6,7 +6,16 @@ This library converts an AEAT XLSX layout into per‑sheet CSVs, parses the
 layout definition, and renders fixed‑width text files using a single JSON
 input (codes + non‑code fields).
 
-## Layout source
+## Primary usage
+
+The main purpose of this library is:
+
+- Render AEAT TXT from JSON inputs.
+- Parse AEAT TXT back to JSON and validate it.
+
+The sections **Rendering API** and **Reverse parsing** below are the primary entry points.
+
+## Layout source (maintenance)
 
 The official layout XLSX files are stored here:
 
@@ -27,7 +36,7 @@ Generated artifacts (390):
 - `csv_x2c_390/` – per‑sheet CSVs
 - `aeat_code2txt/layouts/layouts_390.json` – bundled JSON layout
 
-## Quickstart
+## Quickstart (maintenance)
 
 Regenerate everything from the XLSX:
 
@@ -121,7 +130,7 @@ text = render_report(layout, data=data)
 
 CSV parsing is only needed when the XLSX layout changes.
 
-## Rendering API
+## Rendering API (primary)
 
 ```python
 from decimal import Decimal
@@ -139,7 +148,7 @@ Hooks are supported:
 - `value_hooks(field, raw_value, context) -> str`
 - `post_record_hooks(record, rendered_text, context) -> str`
 
-## Reverse parsing (TXT → JSON)
+## Reverse parsing (TXT → JSON) (primary)
 
 ```python
 from aeat_code2txt import load_layout, parse_report, validate_report
