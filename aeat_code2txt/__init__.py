@@ -9,6 +9,7 @@ from .renderer import (
     ValueHook,
     render_record,
     render_report,
+    validate_data,
 )
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "ValueHook",
     "render_record",
     "render_report",
+    "validate_data",
 ]

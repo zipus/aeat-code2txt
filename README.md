@@ -37,6 +37,12 @@ PYTHONPATH=. python3 scripts/render_report.py \
   --output examples/output_303.txt
 ```
 
+Strict mode (error on unknown keys):
+
+```python
+text = render_report(layout, data=data, strict=True)
+```
+
 ## Single JSON input
 
 You can supply a **single JSON** that mixes:

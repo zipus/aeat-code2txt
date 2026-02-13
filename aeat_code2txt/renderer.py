@@ -30,11 +30,16 @@ def render_report(
     values: Mapping[str, str] | None = None,
     overrides: Mapping[str, str] | None = None,
     data: Mapping[str, str | int | float | Decimal] | None = None,
+    strict: bool = False,
     pre_record_hooks: list[PreRecordHook] | None = None,
     value_hooks: list[ValueHook] | None = None,
     post_record_hooks: list[PostRecordHook] | None = None,
 ) -> str:
     amounts, values = _split_inputs(amounts, values, data)
+    if strict:
+        unknown = validate_data(report, amounts=amounts, values=values)
+        if unknown:
+            raise ValueError(f"Unknown data keys: {sorted(unknown)}")
     records = []
     for record in report.records:
         records.append(
@@ -58,6 +63,7 @@ def render_record(
     values: Mapping[str, str] | None = None,
     overrides: Mapping[str, str] | None = None,
     data: Mapping[str, str | int | float | Decimal] | None = None,
+    strict: bool = False,
     pre_record_hooks: list[PreRecordHook] | None = None,
     value_hooks: list[ValueHook] | None = None,
     post_record_hooks: list[PostRecordHook] | None = None,
@@ -65,6 +71,10 @@ def render_record(
     amounts, values = _split_inputs(amounts, values, data)
     values = values or {}
     overrides = overrides or {}
+    if strict:
+        unknown = validate_data(record, amounts=amounts, values=values)
+        if unknown:
+            raise ValueError(f"Unknown data keys: {sorted(unknown)}")
     context = RenderContext(amounts=amounts, values=values, overrides=overrides)
 
     if pre_record_hooks:
@@ -107,6 +117,29 @@ def _split_inputs(
         else:
             vals[str(key)] = str(value)
     return amt, vals
+
+
+def validate_data(
+    target: ReportLayout | RecordLayout,
+    *,
+    amounts: Mapping[str, Decimal] | None = None,
+    values: Mapping[str, str] | None = None,
+) -> set[str]:
+    amounts = amounts or {}
+    values = values or {}
+    known = set()
+    if isinstance(target, ReportLayout):
+        records = target.records
+    else:
+        records = [target]
+    for record in records:
+        for field in record.fields:
+            if field.code:
+                known.add(field.code)
+            if field.key:
+                known.add(field.key)
+    provided = set(map(str, amounts.keys())) | set(map(str, values.keys()))
+    return provided - known
 
 
 def _compute_values(record: RecordLayout, amounts: Mapping[str, Decimal]) -> dict[str, Decimal]:
