@@ -6,14 +6,42 @@ This library converts an AEAT XLSX layout into per‑sheet CSVs, parses the
 layout definition, and renders fixed‑width text files using a single JSON
 input (codes + non‑code fields).
 
-## Primary usage
+## Rendering API (primary)
 
-The main purpose of this library is:
+```python
+from decimal import Decimal
+from aeat_code2txt import load_layout, render_report
 
-- Render AEAT TXT from JSON inputs.
-- Parse AEAT TXT back to JSON and validate it.
+layout = load_layout("303")
+data = {"01": Decimal("1000.00"), "identificacion_1_nif": "B12345678"}
 
-The sections **Rendering API** and **Reverse parsing** below are the primary entry points.
+text = render_report(layout, data=data)
+```
+
+Hooks are supported:
+
+- `pre_record_hooks(record, context)`
+- `value_hooks(field, raw_value, context) -> str`
+- `post_record_hooks(record, rendered_text, context) -> str`
+
+Strict mode (error on unknown keys):
+
+```python
+text = render_report(layout, data=data, strict=True)
+```
+
+## Reverse parsing (TXT → JSON) (primary)
+
+```python
+from aeat_code2txt import load_layout, parse_report, validate_report
+
+layout = load_layout("303")
+data = parse_report(text, layout)
+issues = validate_report(text, layout)
+```
+
+`parse_report` returns a flat dict with both codes and keys.  
+`validate_report` checks constants and formulas and returns a list of issues.
 
 ## Layout source (maintenance)
 
@@ -72,12 +100,6 @@ Load model 390:
 layout = load_layout("390")
 ```
 
-Strict mode (error on unknown keys):
-
-```python
-text = render_report(layout, data=data, strict=True)
-```
-
 ## Single JSON input
 
 You can supply a **single JSON** that mixes:
@@ -129,37 +151,6 @@ text = render_report(layout, data=data)
 ```
 
 CSV parsing is only needed when the XLSX layout changes.
-
-## Rendering API (primary)
-
-```python
-from decimal import Decimal
-from aeat_code2txt import load_layout, render_report
-
-layout = load_layout("303")
-data = {"01": Decimal("1000.00"), "identificacion_1_nif": "B12345678"}
-
-text = render_report(layout, data=data)
-```
-
-Hooks are supported:
-
-- `pre_record_hooks(record, context)`
-- `value_hooks(field, raw_value, context) -> str`
-- `post_record_hooks(record, rendered_text, context) -> str`
-
-## Reverse parsing (TXT → JSON) (primary)
-
-```python
-from aeat_code2txt import load_layout, parse_report, validate_report
-
-layout = load_layout("303")
-data = parse_report(text, layout)
-issues = validate_report(text, layout)
-```
-
-`parse_report` returns a flat dict with both codes and keys.  
-`validate_report` checks constants and formulas and returns a list of issues.
 
 ## Tests
 
