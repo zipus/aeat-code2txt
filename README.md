@@ -1,6 +1,6 @@
 # aeat-code2txt
 
-Render AEAT fixed‑position reports (e.g. Model 303) from official XLSX layouts.
+Render AEAT fixed‑position reports (e.g. Models 303 and 390) from official XLSX layouts.
 
 This library converts an AEAT XLSX layout into per‑sheet CSVs, parses the
 layout definition, and renders fixed‑width text files using a single JSON
@@ -8,11 +8,12 @@ input (codes + non‑code fields).
 
 ## Layout source
 
-The official layout XLSX is stored here:
+The official layout XLSX files are stored here:
 
 - `data/DR303e26v101.xlsx`
+- `data/dr390e2025.xlsx`
 
-Generated artifacts:
+Generated artifacts (303):
 
 - `csv_x2c_303/` – per‑sheet CSVs (canonical)
 - `aeat_code2txt/layouts/layouts_303.json` – bundled JSON layout (runtime input)
@@ -20,6 +21,11 @@ Generated artifacts:
 - `examples/keys_303.json` – non‑code field keys (template)
 - `examples/data_303.json` – merged input (codes + keys)
 - `examples/output_303.txt` – sample render
+
+Generated artifacts (390):
+
+- `csv_x2c_390/` – per‑sheet CSVs
+- `aeat_code2txt/layouts/layouts_390.json` – bundled JSON layout
 
 ## Quickstart
 
@@ -29,7 +35,7 @@ Regenerate everything from the XLSX:
 scripts/regenerate_all.sh data/DR303e26v101.xlsx
 ```
 
-If `data/dr390e2025.xlsx` exists, the script also generates:
+If `data/dr390e2025.xlsx` exists, the script also generates the 390 artifacts.
 
 - `csv_x2c_390/`
 - `aeat_code2txt/layouts/layouts_390.json`
@@ -49,6 +55,12 @@ Load bundled layout by model (recommended for runtime):
 from aeat_code2txt import load_layout
 
 layout = load_layout("303")
+```
+
+Load model 390:
+
+```python
+layout = load_layout("390")
 ```
 
 Strict mode (error on unknown keys):
@@ -96,13 +108,26 @@ Each entry includes:
 - constant, decimals, formula (if any)
 - description/validation/content
 
+## Layout JSON (runtime)
+
+Use the bundled JSON layouts at runtime instead of parsing CSVs:
+
+```python
+from aeat_code2txt import load_layout, render_report
+
+layout = load_layout("303")
+text = render_report(layout, data=data)
+```
+
+CSV parsing is only needed when the XLSX layout changes.
+
 ## Rendering API
 
 ```python
 from decimal import Decimal
-from aeat_code2txt import parse_layout_directory, render_report
+from aeat_code2txt import load_layout, render_report
 
-layout = parse_layout_directory(Path("csv_x2c_303"))
+layout = load_layout("303")
 data = {"01": Decimal("1000.00"), "identificacion_1_nif": "B12345678"}
 
 text = render_report(layout, data=data)
@@ -117,9 +142,9 @@ Hooks are supported:
 ## Reverse parsing (TXT → JSON)
 
 ```python
-from aeat_code2txt import parse_layout_directory, parse_report, validate_report
+from aeat_code2txt import load_layout, parse_report, validate_report
 
-layout = parse_layout_directory(Path("csv_x2c_303"))
+layout = load_layout("303")
 data = parse_report(text, layout)
 issues = validate_report(text, layout)
 ```
